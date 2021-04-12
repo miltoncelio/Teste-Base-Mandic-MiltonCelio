@@ -1,0 +1,57 @@
+---
+- name: Teste
+  hosts: localhost
+  become: true
+
+  tasks:
+  - name: Adicionar epel-release
+    yum:
+      name: epel-release
+      state: present
+
+  - name: Instalar Nginx
+    yum:
+      name: nginx
+      state: present
+
+  - name: Startando o servico Nginx
+    service:
+      name: nginx
+      state: started
+      enabled: yes
+
+  - name: Liberar porta 80
+    iptables:
+      chain: INPUT
+      destination_port: 80
+      jump: ACCEPT
+      protocol: tcp
+
+  - name: Verificar SElinux
+    selinux:
+      policy: targeted
+      state: permissive
+
+  - name: Instalar utils
+    yum:
+      name: yum-utils
+      state: latest
+
+  - name: adicionar Docker Repositório
+    get_url:
+      url: https://download.docker.com/linux/centos/docker-ce.repo
+      dest: /etc/yum.repos.d/docker-ce.repo
+    become: yes
+
+  - name: Instlar Docker
+    package:
+      name: docker-ce
+      state: latest
+    become: yes
+
+  - name: Startar servico Docker
+    service:
+      name: docker
+      state: started
+      enabled: yes
+    become: yes
